@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+    {% if role == 'student' %}
+        <h1>Welcome {{ username }} (Student)</h1>
+        <p>You have student access.</p>
+    {% elif role == 'teacher' %}
+        <h1>Welcome {{ username }} (Teacher)</h1>
+        <p>You can assign tasks and view student progress.</p>
+    {% elif role == 'head' %}
+        <h1>Welcome {{ username }} (Headmaster)</h1>
+        <p>You have full system access.</p>
+    {% endif %}
+
+    <!-- Fixed link here: use the passed main_site_url variable -->
+    <p><a href="{{ main_site_url }}">Go to Main Page</a></p>
+
+    <p><a href="{{ url_for('logout') }}">Logout</a></p>
+</body>
+</html>
