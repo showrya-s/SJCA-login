@@ -1,23 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Dashboard</title>
+  <meta charset="UTF-8">
+  <title>Dashboard - St. John's Catechism Academy</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #fdfcf9;
+      font-family: 'Times New Roman', serif;
+    }
+    .dashboard {
+      max-width: 700px;
+      margin: 60px auto;
+      padding: 30px;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.15);
+      border: 1px solid gold;
+    }
+    h1 {
+      color: #5a0000;
+      font-weight: bold;
+    }
+    a.btn-custom {
+      background-color: #5a0000;
+      color: white;
+    }
+    a.btn-custom:hover {
+      background-color: gold;
+      color: #5a0000;
+    }
+  </style>
 </head>
 <body>
+  <div class="dashboard text-center">
     {% if role == 'student' %}
-        <h1>Welcome {{ username }} (Student)</h1>
-        <p>You have student access.</p>
+      <h1>Welcome {{ username }} (Student)</h1>
+      <p>You have student access.</p>
     {% elif role == 'teacher' %}
-        <h1>Welcome {{ username }} (Teacher)</h1>
-        <p>You can assign tasks and view student progress.</p>
+      <h1>Welcome {{ username }} (Teacher)</h1>
+      <p>You can assign tasks and view student progress.</p>
     {% elif role == 'head' %}
-        <h1>Welcome {{ username }} (Headmaster)</h1>
-        <p>You have full system access.</p>
+      <h1>Welcome {{ username }} (Headmaster)</h1>
+      <p>You have full system access.</p>
     {% endif %}
 
-    <!-- Fixed link here: use the passed main_site_url variable -->
-    <p><a href="{{ main_site_url }}">Go to Main Page</a></p>
-
-    <p><a href="{{ url_for('logout') }}">Logout</a></p>
+    <div class="d-grid gap-2 mt-4">
+      <a href="{{ main_site_url }}" class="btn btn-custom">Go to Main Academy Site</a>
+      <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">Logout</a>
+    </div>
+  </div>
 </body>
 </html>
+
