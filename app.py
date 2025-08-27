@@ -28,9 +28,17 @@ class Notification(db.Model):
     title = db.Column(db.String(100), nullable=False)
     text = db.Column(db.Text, nullable=False)
 
-# --- Create tables ---
+# --- Create tables and default admin account ---
 with app.app_context():
     db.create_all()
+
+    # Create default dummy admin account if not exists
+    if not User.query.filter_by(username="admin").first():
+        hashed_pw = generate_password_hash("admin123")
+        admin_user = User(username="admin", password=hashed_pw, role="head")
+        db.session.add(admin_user)
+        db.session.commit()
+        print("Default admin account created: username='admin', password='admin123'")
 
 # --- Routes ---
 @app.route("/")
