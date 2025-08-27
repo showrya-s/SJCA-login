@@ -4,7 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 
 app = Flask(__name__)
-app.secret_key = "super_secret_key_here"  # Change to something strong!
+app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key")  # Use env in production
 
 # --- Database setup ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -12,28 +12,30 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(BASE_DIR, "u
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
-# --- User Model ---
+# --- Models ---
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)
 
-# --- Assignment Model ---
 class Assignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.Text, nullable=False)
 
-# ✅ Create DB tables at app startup
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    text = db.Column(db.Text, nullable=False)
+
+# --- Create tables ---
 with app.app_context():
     db.create_all()
 
-# --- Home / Dashboard Redirect ---
+# --- Routes ---
 @app.route("/")
 def home():
-    if "username" in session:
-        return redirect(url_for("dashboard"))
-    return redirect(url_for("login"))
+    return redirect(url_for("dashboard") if "username" in session else url_for("login"))
 
 # --- Login ---
 @app.route("/login", methods=["GET", "POST"])
@@ -42,16 +44,13 @@ def login():
     if request.method == "POST":
         username = request.form["username"].lower()
         password = request.form["password"]
-
         user = User.query.filter_by(username=username).first()
-
         if user and check_password_hash(user.password, password):
             session["username"] = user.username
             session["role"] = user.role
             return redirect(url_for("dashboard"))
         else:
             error = "Invalid username or password."
-
     return render_template("login.html", error=error)
 
 # --- Register ---
@@ -59,12 +58,10 @@ def login():
 def register():
     error = None
     success = None
-
     if request.method == "POST":
         username = request.form["username"].lower()
         password = request.form["password"]
         role = request.form["role"]
-
         if User.query.filter_by(username=username).first():
             error = "Username already exists."
         else:
@@ -73,7 +70,6 @@ def register():
             db.session.add(new_user)
             db.session.commit()
             success = "Account created successfully! You can now login."
-
     return render_template("register.html", error=error, success=success)
 
 # --- Dashboard ---
@@ -81,29 +77,60 @@ def register():
 def dashboard():
     if "username" not in session:
         return redirect(url_for("login"))
-
+    
     assignments = Assignment.query.all()
-
+    notifications = Notification.query.all()
+    
     return render_template(
         "dashboard.html",
         username=session["username"],
         role=session["role"],
-        assignments=assignments
+        assignments=assignments,
+        notifications=notifications
     )
 
-# --- Add Assignment (Teachers + Head only) ---
+# --- Add Assignment ---
 @app.route("/add_assignment", methods=["POST"])
 def add_assignment():
     if "username" not in session:
         return redirect(url_for("login"))
-
     if session["role"] in ["teacher", "head"]:
         text = request.form["text"].strip()
         if text:
-            new_assignment = Assignment(text=text)
-            db.session.add(new_assignment)
+            db.session.add(Assignment(text=text))
             db.session.commit()
+    return redirect(url_for("dashboard"))
 
+# --- Add Notification ---
+@app.route("/add_notification", methods=["POST"])
+def add_notification():
+    if "username" not in session or session["role"] not in ["teacher", "head"]:
+        return redirect(url_for("dashboard"))
+    title = request.form["title"].strip()
+    text = request.form["text"].strip()
+    if title and text:
+        db.session.add(Notification(title=title, text=text))
+        db.session.commit()
+    return redirect(url_for("dashboard"))
+
+# --- Delete Assignment ---
+@app.route("/delete_assignment/<int:id>", methods=["POST"])
+def delete_assignment(id):
+    if "username" not in session or session["role"] not in ["teacher", "head"]:
+        return redirect(url_for("dashboard"))
+    assignment = Assignment.query.get_or_404(id)
+    db.session.delete(assignment)
+    db.session.commit()
+    return redirect(url_for("dashboard"))
+
+# --- Delete Notification ---
+@app.route("/delete_notification/<int:id>", methods=["POST"])
+def delete_notification(id):
+    if "username" not in session or session["role"] not in ["teacher", "head"]:
+        return redirect(url_for("dashboard"))
+    note = Notification.query.get_or_404(id)
+    db.session.delete(note)
+    db.session.commit()
     return redirect(url_for("dashboard"))
 
 # --- Logout ---
@@ -112,7 +139,7 @@ def logout():
     session.clear()
     return redirect(url_for("login"))
 
+# --- Run App ---
 if __name__ == "__main__":
-    app.run(debug=True)
-
-
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
