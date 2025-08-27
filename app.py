@@ -18,38 +18,37 @@ class User(db.Model):
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)
+    section = db.Column(db.String(50), nullable=False, default="grade 1")
 
 class Assignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.Text, nullable=False)
-    section = db.Column(db.String(50), nullable=False)
-
-class Quiz(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.Text, nullable=False)
-    section = db.Column(db.String(50), nullable=False)
-
-class Prayer(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.Text, nullable=False)
-    section = db.Column(db.String(50), nullable=False)
+    section = db.Column(db.String(50), nullable=False, default="grade 1")
 
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     text = db.Column(db.Text, nullable=False)
 
-# --- Create tables and default admin account ---
+# --- Create tables and default accounts ---
 with app.app_context():
     db.create_all()
 
-    # Create default dummy admin account if not exists
+    # Default admin account
     if not User.query.filter_by(username="admin").first():
         hashed_pw = generate_password_hash("admin123")
-        admin_user = User(username="admin", password=hashed_pw, role="head")
+        admin_user = User(username="admin", password=hashed_pw, role="head", section="all")
         db.session.add(admin_user)
         db.session.commit()
         print("Default admin account created: username='admin', password='admin123'")
+
+    # Default Grade 5 student account
+    if not User.query.filter_by(username="jaitya reddy").first():
+        hashed_pw = generate_password_hash("grade5pass")
+        grade5_student = User(username="jaitya reddy", password=hashed_pw, role="student", section="grade 5")
+        db.session.add(grade5_student)
+        db.session.commit()
+        print("Default Grade 5 student account created: username='Jaitya Reddy', password='grade5pass', section='Grade 5'")
 
 # --- Routes ---
 @app.route("/")
@@ -67,6 +66,7 @@ def login():
         if user and check_password_hash(user.password, password):
             session["username"] = user.username
             session["role"] = user.role
+            session["section"] = user.section
             return redirect(url_for("dashboard"))
         else:
             error = "Invalid username or password."
@@ -81,11 +81,12 @@ def register():
         username = request.form["username"].lower()
         password = request.form["password"]
         role = request.form["role"]
+        section = request.form.get("section", "grade 1")
         if User.query.filter_by(username=username).first():
             error = "Username already exists."
         else:
             hashed_pw = generate_password_hash(password)
-            new_user = User(username=username, password=hashed_pw, role=role)
+            new_user = User(username=username, password=hashed_pw, role=role, section=section)
             db.session.add(new_user)
             db.session.commit()
             success = "Account created successfully! You can now login."
@@ -96,19 +97,17 @@ def register():
 def dashboard():
     if "username" not in session:
         return redirect(url_for("login"))
-    
-    assignments = Assignment.query.all()
-    quizzes = Quiz.query.all()
-    prayers = Prayer.query.all()
-    notifications = Notification.query.all()
-    
+
+    # Assignments, notifications filtered by section
+    assignments = Assignment.query.filter_by(section=session.get("section")).all()
+    notifications = Notification.query.all()  # Notifications are for whole academy
+
     return render_template(
         "dashboard.html",
         username=session["username"],
         role=session["role"],
+        section=session.get("section"),
         assignments=assignments,
-        quizzes=quizzes,
-        prayers=prayers,
         notifications=notifications
     )
 
@@ -119,35 +118,9 @@ def add_assignment():
         return redirect(url_for("login"))
     if session["role"] in ["teacher", "head"]:
         text = request.form["text"].strip()
-        section = request.form.get("section")
-        if text and section:
+        section = request.form.get("section", "grade 1")
+        if text:
             db.session.add(Assignment(text=text, section=section))
-            db.session.commit()
-    return redirect(url_for("dashboard"))
-
-# --- Add Quiz ---
-@app.route("/add_quiz", methods=["POST"])
-def add_quiz():
-    if "username" not in session:
-        return redirect(url_for("login"))
-    if session["role"] in ["teacher", "head"]:
-        text = request.form["text"].strip()
-        section = request.form.get("section")
-        if text and section:
-            db.session.add(Quiz(text=text, section=section))
-            db.session.commit()
-    return redirect(url_for("dashboard"))
-
-# --- Add Prayer ---
-@app.route("/add_prayer", methods=["POST"])
-def add_prayer():
-    if "username" not in session:
-        return redirect(url_for("login"))
-    if session["role"] in ["teacher", "head"]:
-        text = request.form["text"].strip()
-        section = request.form.get("section")
-        if text and section:
-            db.session.add(Prayer(text=text, section=section))
             db.session.commit()
     return redirect(url_for("dashboard"))
 
@@ -173,26 +146,6 @@ def delete_assignment(id):
     db.session.commit()
     return redirect(url_for("dashboard"))
 
-# --- Delete Quiz ---
-@app.route("/delete_quiz/<int:id>", methods=["POST"])
-def delete_quiz(id):
-    if "username" not in session or session["role"] not in ["teacher", "head"]:
-        return redirect(url_for("dashboard"))
-    quiz = Quiz.query.get_or_404(id)
-    db.session.delete(quiz)
-    db.session.commit()
-    return redirect(url_for("dashboard"))
-
-# --- Delete Prayer ---
-@app.route("/delete_prayer/<int:id>", methods=["POST"])
-def delete_prayer(id):
-    if "username" not in session or session["role"] not in ["teacher", "head"]:
-        return redirect(url_for("dashboard"))
-    prayer = Prayer.query.get_or_404(id)
-    db.session.delete(prayer)
-    db.session.commit()
-    return redirect(url_for("dashboard"))
-
 # --- Delete Notification ---
 @app.route("/delete_notification/<int:id>", methods=["POST"])
 def delete_notification(id):
@@ -213,3 +166,4 @@ def logout():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
+
