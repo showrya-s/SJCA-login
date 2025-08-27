@@ -22,6 +22,17 @@ class User(db.Model):
 class Assignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.Text, nullable=False)
+    section = db.Column(db.String(50), nullable=False)
+
+class Quiz(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.Text, nullable=False)
+    section = db.Column(db.String(50), nullable=False)
+
+class Prayer(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.Text, nullable=False)
+    section = db.Column(db.String(50), nullable=False)
 
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -87,6 +98,8 @@ def dashboard():
         return redirect(url_for("login"))
     
     assignments = Assignment.query.all()
+    quizzes = Quiz.query.all()
+    prayers = Prayer.query.all()
     notifications = Notification.query.all()
     
     return render_template(
@@ -94,6 +107,8 @@ def dashboard():
         username=session["username"],
         role=session["role"],
         assignments=assignments,
+        quizzes=quizzes,
+        prayers=prayers,
         notifications=notifications
     )
 
@@ -104,8 +119,35 @@ def add_assignment():
         return redirect(url_for("login"))
     if session["role"] in ["teacher", "head"]:
         text = request.form["text"].strip()
-        if text:
-            db.session.add(Assignment(text=text))
+        section = request.form.get("section")
+        if text and section:
+            db.session.add(Assignment(text=text, section=section))
+            db.session.commit()
+    return redirect(url_for("dashboard"))
+
+# --- Add Quiz ---
+@app.route("/add_quiz", methods=["POST"])
+def add_quiz():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    if session["role"] in ["teacher", "head"]:
+        text = request.form["text"].strip()
+        section = request.form.get("section")
+        if text and section:
+            db.session.add(Quiz(text=text, section=section))
+            db.session.commit()
+    return redirect(url_for("dashboard"))
+
+# --- Add Prayer ---
+@app.route("/add_prayer", methods=["POST"])
+def add_prayer():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    if session["role"] in ["teacher", "head"]:
+        text = request.form["text"].strip()
+        section = request.form.get("section")
+        if text and section:
+            db.session.add(Prayer(text=text, section=section))
             db.session.commit()
     return redirect(url_for("dashboard"))
 
@@ -128,6 +170,26 @@ def delete_assignment(id):
         return redirect(url_for("dashboard"))
     assignment = Assignment.query.get_or_404(id)
     db.session.delete(assignment)
+    db.session.commit()
+    return redirect(url_for("dashboard"))
+
+# --- Delete Quiz ---
+@app.route("/delete_quiz/<int:id>", methods=["POST"])
+def delete_quiz(id):
+    if "username" not in session or session["role"] not in ["teacher", "head"]:
+        return redirect(url_for("dashboard"))
+    quiz = Quiz.query.get_or_404(id)
+    db.session.delete(quiz)
+    db.session.commit()
+    return redirect(url_for("dashboard"))
+
+# --- Delete Prayer ---
+@app.route("/delete_prayer/<int:id>", methods=["POST"])
+def delete_prayer(id):
+    if "username" not in session or session["role"] not in ["teacher", "head"]:
+        return redirect(url_for("dashboard"))
+    prayer = Prayer.query.get_or_404(id)
+    db.session.delete(prayer)
     db.session.commit()
     return redirect(url_for("dashboard"))
 
