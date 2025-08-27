@@ -30,6 +30,16 @@ class Notification(db.Model):
     title = db.Column(db.String(100), nullable=False)
     text = db.Column(db.Text, nullable=False)
 
+class Prayer(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.Text, nullable=False)
+    section = db.Column(db.String(50), nullable=False, default="grade 1")
+
+class Quiz(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.Text, nullable=False)
+    section = db.Column(db.String(50), nullable=False, default="grade 1")
+
 # --- Create tables and default accounts ---
 with app.app_context():
     db.create_all()
@@ -98,9 +108,10 @@ def dashboard():
     if "username" not in session:
         return redirect(url_for("login"))
 
-    # Assignments, notifications filtered by section
     assignments = Assignment.query.filter_by(section=session.get("section")).all()
-    notifications = Notification.query.all()  # Notifications are for whole academy
+    prayers = Prayer.query.filter_by(section=session.get("section")).all()
+    quizzes = Quiz.query.filter_by(section=session.get("section")).all()
+    notifications = Notification.query.all()  # Notifications are for all
 
     return render_template(
         "dashboard.html",
@@ -108,6 +119,8 @@ def dashboard():
         role=session["role"],
         section=session.get("section"),
         assignments=assignments,
+        prayers=prayers,
+        quizzes=quizzes,
         notifications=notifications
     )
 
@@ -122,6 +135,30 @@ def add_assignment():
         if text:
             db.session.add(Assignment(text=text, section=section))
             db.session.commit()
+    return redirect(url_for("dashboard"))
+
+# --- Add Prayer ---
+@app.route("/add_prayer", methods=["POST"])
+def add_prayer():
+    if "username" not in session or session["role"] not in ["teacher", "head"]:
+        return redirect(url_for("dashboard"))
+    text = request.form["text"].strip()
+    section = request.form.get("section", "grade 1")
+    if text:
+        db.session.add(Prayer(text=text, section=section))
+        db.session.commit()
+    return redirect(url_for("dashboard"))
+
+# --- Add Quiz ---
+@app.route("/add_quiz", methods=["POST"])
+def add_quiz():
+    if "username" not in session or session["role"] not in ["teacher", "head"]:
+        return redirect(url_for("dashboard"))
+    text = request.form["text"].strip()
+    section = request.form.get("section", "grade 1")
+    if text:
+        db.session.add(Quiz(text=text, section=section))
+        db.session.commit()
     return redirect(url_for("dashboard"))
 
 # --- Add Notification ---
@@ -146,6 +183,26 @@ def delete_assignment(id):
     db.session.commit()
     return redirect(url_for("dashboard"))
 
+# --- Delete Prayer ---
+@app.route("/delete_prayer/<int:id>", methods=["POST"])
+def delete_prayer(id):
+    if "username" not in session or session["role"] not in ["teacher", "head"]:
+        return redirect(url_for("dashboard"))
+    prayer = Prayer.query.get_or_404(id)
+    db.session.delete(prayer)
+    db.session.commit()
+    return redirect(url_for("dashboard"))
+
+# --- Delete Quiz ---
+@app.route("/delete_quiz/<int:id>", methods=["POST"])
+def delete_quiz(id):
+    if "username" not in session or session["role"] not in ["teacher", "head"]:
+        return redirect(url_for("dashboard"))
+    quiz = Quiz.query.get_or_404(id)
+    db.session.delete(quiz)
+    db.session.commit()
+    return redirect(url_for("dashboard"))
+
 # --- Delete Notification ---
 @app.route("/delete_notification/<int:id>", methods=["POST"])
 def delete_notification(id):
@@ -166,4 +223,3 @@ def logout():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
-
