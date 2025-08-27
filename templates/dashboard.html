@@ -1,55 +1,245 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Dashboard - St. John's Catechism Academy</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>St. John's Catechism Academy</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
     body {
-      background-color: #fdfcf9;
       font-family: 'Times New Roman', serif;
+      background-color: #fdfcf9;
+      margin: 0;
+      padding: 0;
     }
-    .dashboard {
-      max-width: 700px;
-      margin: 60px auto;
-      padding: 30px;
-      border-radius: 12px;
-      background: #fff;
-      box-shadow: 0px 4px 10px rgba(0,0,0,0.15);
-      border: 1px solid gold;
-    }
-    h1 {
-      color: #5a0000;
-      font-weight: bold;
-    }
-    a.btn-custom {
+    /* Top Bar */
+    .topbar {
       background-color: #5a0000;
       color: white;
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
-    a.btn-custom:hover {
+    .topbar-center {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .topbar h1 {
+      font-size: 1.5rem;
+      margin: 0;
+      white-space: nowrap;
+    }
+    .menu-icon {
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .topbar img {
+      height: 40px;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      height: 100%;
+      width: 0;
+      position: fixed;
+      z-index: 1000;
+      top: 0;
+      left: 0;
+      background-color: #5a0000;
+      overflow-x: hidden;
+      transition: 0.3s;
+      padding-top: 60px;
+    }
+    .sidebar a {
+      padding: 15px 25px;
+      text-decoration: none;
+      font-size: 18px;
+      color: white;
+      display: block;
+      transition: 0.2s;
+    }
+    .sidebar a:hover {
       background-color: gold;
       color: #5a0000;
+    }
+    .sidebar i {
+      margin-right: 10px;
+    }
+    .closebtn {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 24px;
+      cursor: pointer;
+      color: white;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(rgba(90,0,0,0.7), rgba(90,0,0,0.7)),
+                  url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?fit=crop&w=1950&q=80') center/cover;
+      color: white;
+      text-align: center;
+      padding: 80px 20px;
+    }
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: bold;
+    }
+    .hero p {
+      font-size: 1.5rem;
+      font-style: italic;
+    }
+
+    /* Sections */
+    .section-title {
+      color: #5a0000;
+      font-weight: bold;
+      margin-top: 50px;
+      margin-bottom: 20px;
+    }
+    .card {
+      border: 1px solid gold;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    button {
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
-  <div class="dashboard text-center">
-    {% if role == 'student' %}
-      <h1>Welcome {{ username }} (Student)</h1>
-      <p>You have student access.</p>
-    {% elif role == 'teacher' %}
-      <h1>Welcome {{ username }} (Teacher)</h1>
-      <p>You can assign tasks and view student progress.</p>
-    {% elif role == 'head' %}
-      <h1>Welcome {{ username }} (Headmaster)</h1>
-      <p>You have full system access.</p>
-    {% endif %}
 
-    <div class="d-grid gap-2 mt-4">
-      <a href="{{ main_site_url }}" class="btn btn-custom">Go to Main Academy Site</a>
-      <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">Logout</a>
+  <!-- Sidebar -->
+  <div id="mySidebar" class="sidebar">
+    <span class="closebtn" onclick="closeNav()">&times;</span>
+    <a href="#" onclick="showSection('home')"><i class="fas fa-home"></i> Home</a>
+    
+    <a href="#" onclick="showSection('assignments')"><i class="fas fa-tasks"></i> Assignments</a>
+    <a href="#" onclick="showSection('prayers')"><i class="fas fa-praying-hands"></i> Prayers</a>
+    <a href="#" onclick="showSection('quizzes')"><i class="fas fa-question-circle"></i> Quizzes</a>
+    <a href="#" onclick="showSection('notifications')"><i class="fas fa-bell"></i> Notifications</a>
+    
+    <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+  </div>
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <span class="menu-icon" onclick="openNav()"><i class="fas fa-bars"></i></span>
+    <div class="topbar-center">
+       <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Academy Logo" class="logo" />
+      <h1>St. John's Catechism Academy</h1>
+    </div>
+    <div>Welcome, {{ username }} ({{ role }})</div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div id="main-content">
+    <section class="hero">
+      <h1>St. John's Catechism Academy</h1>
+      <p>Grow Spiritually</p>
+    </section>
+
+    <div class="container">
+      <h2 class="section-title"><i class="fas fa-bell"></i> Latest Notifications</h2>
+      <div class="row">
+        {% for note in notifications %}
+          <div class="col-md-4">
+            <div class="card p-3">
+              <h5>{{ note.title }}</h5>
+              <p>{{ note.text }}</p>
+              {% if role in ['teacher', 'head'] %}
+                <form method="POST" action="{{ url_for('delete_notification', id=note.id) }}">
+                  <button class="btn btn-sm btn-danger">Delete</button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+        {% else %}
+          <p>No notifications yet.</p>
+        {% endfor %}
+      </div>
+
+      {% if role in ['teacher', 'head'] %}
+        <form method="POST" action="{{ url_for('add_notification') }}">
+          <input type="text" name="title" class="form-control mb-2" placeholder="Notification Title" required>
+          <textarea name="text" class="form-control" placeholder="Notification Details" required></textarea>
+          <button type="submit" class="btn btn-success mt-2">Add Notification</button>
+        </form>
+      {% endif %}
     </div>
   </div>
+
+<script>
+  function openNav() {
+    document.getElementById("mySidebar").style.width = "250px";
+  }
+  function closeNav() {
+    document.getElementById("mySidebar").style.width = "0";
+  }
+
+  function showSection(section) {
+    let main = document.getElementById("main-content");
+    closeNav();
+
+    if (section === "assignments") {
+      main.innerHTML = `
+        <section class="hero"><h1>Assignments</h1><p>Your current tasks</p></section>
+        <div class="container">
+          <h2 class="section-title"><i class="fas fa-tasks"></i> Assignments</h2>
+          <ul>
+            {% for a in assignments %}
+              <li>{{ a.text }}
+                {% if role in ['teacher', 'head'] %}
+                  <form method="POST" action="{{ url_for('delete_assignment', id=a.id) }}" style="display:inline;">
+                    <button class="btn btn-sm btn-danger">Delete</button>
+                  </form>
+                {% endif %}
+              </li>
+            {% else %}
+              <p>No assignments yet.</p>
+            {% endfor %}
+          </ul>
+          {% if role in ['teacher', 'head'] %}
+            <form method="POST" action="{{ url_for('add_assignment') }}">
+              <textarea name="text" class="form-control" placeholder="New Assignment" required></textarea>
+              <button type="submit" class="btn btn-success mt-2">Add Assignment</button>
+            </form>
+          {% endif %}
+        </div>
+      `;
+    }
+    else if (section === "prayers") {
+      main.innerHTML = `
+        <section class="hero"><h1>Prayers</h1><p>Daily spiritual guidance</p></section>
+        <div class="container">
+          <h2 class="section-title"><i class="fas fa-praying-hands"></i> Common Prayers</h2>
+          <p>Our Father, who art in heaven...</p>
+        </div>
+      `;
+    } 
+    else if (section === "quizzes") {
+      main.innerHTML = `
+        <section class="hero"><h1>Quizzes</h1><p>Test your knowledge</p></section>
+        <div class="container">
+          <h2 class="section-title"><i class="fas fa-question-circle"></i> Upcoming Quiz</h2>
+          <p>Quiz on the Beatitudes this Sunday.</p>
+        </div>
+      `;
+    }
+    else if (section === "notifications") {
+      location.reload(); // reload page so notifications render properly
+    }
+    else if (section === "home") {
+      location.reload();
+    }
+  }
+</script>
 </body>
 </html>
-
