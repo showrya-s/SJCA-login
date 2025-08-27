@@ -19,6 +19,10 @@ class User(db.Model):
     password = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)
 
+# ✅ Create DB tables at app startup (instead of before_first_request)
+with app.app_context():
+    db.create_all()
+
 # --- Home / Dashboard Redirect ---
 @app.route("/")
 def home():
@@ -86,11 +90,6 @@ def dashboard():
 def logout():
     session.clear()
     return redirect(url_for("login"))
-
-# --- Create DB before first request ---
-@app.before_first_request
-def create_tables():
-    db.create_all()
 
 if __name__ == "__main__":
     app.run(debug=True)
