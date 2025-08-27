@@ -12,25 +12,18 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(BASE_DIR, "u
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
-# --- Sections ---
-SECTIONS = [
-    "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6",
-    "Grade 7", "Grade 8", "Grade 9", "Grade 10",
-    "Holy Communion", "Holy Confirmation", "Holy Communion and Confirmation"
-]
-
 # --- Models ---
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)
-    section = db.Column(db.String(50), nullable=False, default="Grade 1")
+    section = db.Column(db.String(50), nullable=False, default="grade 1")
 
 class Assignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.Text, nullable=False)
-    section = db.Column(db.String(50), nullable=False, default="Grade 1")
+    section = db.Column(db.String(50), nullable=False, default="grade 1")
 
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -40,12 +33,19 @@ class Notification(db.Model):
 class Prayer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.Text, nullable=False)
-    section = db.Column(db.String(50), nullable=False, default="Grade 1")
+    section = db.Column(db.String(50), nullable=False, default="grade 1")
 
 class Quiz(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.Text, nullable=False)
-    section = db.Column(db.String(50), nullable=False, default="Grade 1")
+    section = db.Column(db.String(50), nullable=False, default="grade 1")
+
+# --- Default sections ---
+SECTIONS = [
+    "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6",
+    "Grade 7", "Grade 8", "Grade 9", "Grade 10",
+    "Holy Communion", "Holy Confirmation", "Holy Communion and Confirmation"
+]
 
 # --- Create tables and default accounts ---
 with app.app_context():
@@ -129,10 +129,10 @@ def dashboard():
         prayers=prayers,
         quizzes=quizzes,
         notifications=notifications,
-        sections=SECTIONS  # Pass sections to HTML for form select
+        sections=SECTIONS
     )
 
-# --- Add Assignment ---
+# --- Add / Delete Routes ---
 @app.route("/add_assignment", methods=["POST"])
 def add_assignment():
     if "username" not in session:
@@ -145,7 +145,6 @@ def add_assignment():
             db.session.commit()
     return redirect(url_for("dashboard"))
 
-# --- Add Prayer ---
 @app.route("/add_prayer", methods=["POST"])
 def add_prayer():
     if "username" not in session or session["role"] not in ["teacher", "head"]:
@@ -157,7 +156,6 @@ def add_prayer():
         db.session.commit()
     return redirect(url_for("dashboard"))
 
-# --- Add Quiz ---
 @app.route("/add_quiz", methods=["POST"])
 def add_quiz():
     if "username" not in session or session["role"] not in ["teacher", "head"]:
@@ -169,7 +167,6 @@ def add_quiz():
         db.session.commit()
     return redirect(url_for("dashboard"))
 
-# --- Add Notification ---
 @app.route("/add_notification", methods=["POST"])
 def add_notification():
     if "username" not in session or session["role"] not in ["teacher", "head"]:
@@ -181,7 +178,6 @@ def add_notification():
         db.session.commit()
     return redirect(url_for("dashboard"))
 
-# --- Delete Assignment ---
 @app.route("/delete_assignment/<int:id>", methods=["POST"])
 def delete_assignment(id):
     if "username" not in session or session["role"] not in ["teacher", "head"]:
@@ -191,7 +187,6 @@ def delete_assignment(id):
     db.session.commit()
     return redirect(url_for("dashboard"))
 
-# --- Delete Prayer ---
 @app.route("/delete_prayer/<int:id>", methods=["POST"])
 def delete_prayer(id):
     if "username" not in session or session["role"] not in ["teacher", "head"]:
@@ -201,7 +196,6 @@ def delete_prayer(id):
     db.session.commit()
     return redirect(url_for("dashboard"))
 
-# --- Delete Quiz ---
 @app.route("/delete_quiz/<int:id>", methods=["POST"])
 def delete_quiz(id):
     if "username" not in session or session["role"] not in ["teacher", "head"]:
@@ -211,7 +205,6 @@ def delete_quiz(id):
     db.session.commit()
     return redirect(url_for("dashboard"))
 
-# --- Delete Notification ---
 @app.route("/delete_notification/<int:id>", methods=["POST"])
 def delete_notification(id):
     if "username" not in session or session["role"] not in ["teacher", "head"]:
