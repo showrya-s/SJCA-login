@@ -12,18 +12,25 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(BASE_DIR, "u
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
+# --- Sections ---
+SECTIONS = [
+    "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6",
+    "Grade 7", "Grade 8", "Grade 9", "Grade 10",
+    "Holy Communion", "Holy Confirmation", "Holy Communion and Confirmation"
+]
+
 # --- Models ---
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)
-    section = db.Column(db.String(50), nullable=False, default="grade 1")
+    section = db.Column(db.String(50), nullable=False, default="Grade 1")
 
 class Assignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.Text, nullable=False)
-    section = db.Column(db.String(50), nullable=False, default="grade 1")
+    section = db.Column(db.String(50), nullable=False, default="Grade 1")
 
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -33,12 +40,12 @@ class Notification(db.Model):
 class Prayer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.Text, nullable=False)
-    section = db.Column(db.String(50), nullable=False, default="grade 1")
+    section = db.Column(db.String(50), nullable=False, default="Grade 1")
 
 class Quiz(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.Text, nullable=False)
-    section = db.Column(db.String(50), nullable=False, default="grade 1")
+    section = db.Column(db.String(50), nullable=False, default="Grade 1")
 
 # --- Create tables and default accounts ---
 with app.app_context():
@@ -55,7 +62,7 @@ with app.app_context():
     # Default Grade 5 student account
     if not User.query.filter_by(username="jaitya reddy").first():
         hashed_pw = generate_password_hash("grade5pass")
-        grade5_student = User(username="jaitya reddy", password=hashed_pw, role="student", section="grade 5")
+        grade5_student = User(username="jaitya reddy", password=hashed_pw, role="student", section="Grade 5")
         db.session.add(grade5_student)
         db.session.commit()
         print("Default Grade 5 student account created: username='Jaitya Reddy', password='grade5pass', section='Grade 5'")
@@ -91,7 +98,7 @@ def register():
         username = request.form["username"].lower()
         password = request.form["password"]
         role = request.form["role"]
-        section = request.form.get("section", "grade 1")
+        section = request.form.get("section", "Grade 1")
         if User.query.filter_by(username=username).first():
             error = "Username already exists."
         else:
@@ -100,7 +107,7 @@ def register():
             db.session.add(new_user)
             db.session.commit()
             success = "Account created successfully! You can now login."
-    return render_template("register.html", error=error, success=success)
+    return render_template("register.html", error=error, success=success, sections=SECTIONS)
 
 # --- Dashboard ---
 @app.route("/dashboard")
@@ -121,7 +128,8 @@ def dashboard():
         assignments=assignments,
         prayers=prayers,
         quizzes=quizzes,
-        notifications=notifications
+        notifications=notifications,
+        sections=SECTIONS  # Pass sections to HTML for form select
     )
 
 # --- Add Assignment ---
@@ -131,7 +139,7 @@ def add_assignment():
         return redirect(url_for("login"))
     if session["role"] in ["teacher", "head"]:
         text = request.form["text"].strip()
-        section = request.form.get("section", "grade 1")
+        section = request.form.get("section", "Grade 1")
         if text:
             db.session.add(Assignment(text=text, section=section))
             db.session.commit()
@@ -143,7 +151,7 @@ def add_prayer():
     if "username" not in session or session["role"] not in ["teacher", "head"]:
         return redirect(url_for("dashboard"))
     text = request.form["text"].strip()
-    section = request.form.get("section", "grade 1")
+    section = request.form.get("section", "Grade 1")
     if text:
         db.session.add(Prayer(text=text, section=section))
         db.session.commit()
@@ -155,7 +163,7 @@ def add_quiz():
     if "username" not in session or session["role"] not in ["teacher", "head"]:
         return redirect(url_for("dashboard"))
     text = request.form["text"].strip()
-    section = request.form.get("section", "grade 1")
+    section = request.form.get("section", "Grade 1")
     if text:
         db.session.add(Quiz(text=text, section=section))
         db.session.commit()
@@ -223,5 +231,3 @@ def logout():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
-
-
