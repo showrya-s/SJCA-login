@@ -19,7 +19,12 @@ class User(db.Model):
     password = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)
 
-# ✅ Create DB tables at app startup (instead of before_first_request)
+# --- Assignment Model ---
+class Assignment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.Text, nullable=False)
+
+# ✅ Create DB tables at app startup
 with app.app_context():
     db.create_all()
 
@@ -77,13 +82,29 @@ def dashboard():
     if "username" not in session:
         return redirect(url_for("login"))
 
-    main_site_url = "https://sjca-iq3k.onrender.com/"  # Replace with your main site
+    assignments = Assignment.query.all()
+
     return render_template(
         "dashboard.html",
         username=session["username"],
         role=session["role"],
-        main_site_url=main_site_url
+        assignments=assignments
     )
+
+# --- Add Assignment (Teachers + Head only) ---
+@app.route("/add_assignment", methods=["POST"])
+def add_assignment():
+    if "username" not in session:
+        return redirect(url_for("login"))
+
+    if session["role"] in ["teacher", "head"]:
+        text = request.form["text"].strip()
+        if text:
+            new_assignment = Assignment(text=text)
+            db.session.add(new_assignment)
+            db.session.commit()
+
+    return redirect(url_for("dashboard"))
 
 # --- Logout ---
 @app.route("/logout")
@@ -93,3 +114,5 @@ def logout():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
