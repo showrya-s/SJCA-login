@@ -13,7 +13,6 @@
       margin: 0;
       padding: 0;
     }
-    /* Top Bar */
     .topbar {
       background-color: #5a0000;
       color: white;
@@ -27,23 +26,12 @@
       align-items: center;
       gap: 10px;
     }
-    .topbar h1 {
-      font-size: 1.5rem;
-      margin: 0;
-      white-space: nowrap;
-    }
-    .menu-icon {
-      font-size: 1.5rem;
-      cursor: pointer;
-    }
-    .topbar img {
-      height: 40px;
-    }
-
-    /* Sidebar */
+    .topbar h1 { font-size: 1.5rem; margin: 0; white-space: nowrap; }
+    .menu-icon { font-size: 1.5rem; cursor: pointer; }
+    .topbar img { height: 40px; }
     .sidebar {
       height: 100%;
-      width: 0;
+      width: 250px;
       position: fixed;
       z-index: 1000;
       top: 0;
@@ -61,23 +49,9 @@
       display: block;
       transition: 0.2s;
     }
-    .sidebar a:hover {
-      background-color: gold;
-      color: #5a0000;
-    }
-    .sidebar i {
-      margin-right: 10px;
-    }
-    .closebtn {
-      position: absolute;
-      top: 10px;
-      right: 20px;
-      font-size: 24px;
-      cursor: pointer;
-      color: white;
-    }
-
-    /* Hero */
+    .sidebar a:hover { background-color: gold; color: #5a0000; }
+    .sidebar i { margin-right: 10px; }
+    .closebtn { position: absolute; top: 10px; right: 20px; font-size: 24px; cursor: pointer; color: white; }
     .hero {
       background: linear-gradient(rgba(90,0,0,0.7), rgba(90,0,0,0.7)),
                   url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?fit=crop&w=1950&q=80') center/cover;
@@ -85,53 +59,30 @@
       text-align: center;
       padding: 80px 20px;
     }
-    .hero h1 {
-      font-size: 3rem;
-      font-weight: bold;
-    }
-    .hero p {
-      font-size: 1.5rem;
-      font-style: italic;
-    }
-
-    /* Sections */
-    .section-title {
-      color: #5a0000;
-      font-weight: bold;
-      margin-top: 50px;
-      margin-bottom: 20px;
-    }
-    .card {
-      border: 1px solid gold;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      transition: transform 0.2s ease;
-    }
-    .card:hover {
-      transform: translateY(-5px);
-    }
-    button {
-      margin-bottom: 10px;
-    }
+    .hero h1 { font-size: 3rem; font-weight: bold; }
+    .hero p { font-size: 1.5rem; font-style: italic; }
+    .section-title { color: #5a0000; font-weight: bold; margin-top: 50px; margin-bottom: 20px; }
+    .card { border: 1px solid gold; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.2s ease; }
+    .card:hover { transform: translateY(-5px); }
+    button { margin-bottom: 10px; }
   </style>
 </head>
 <body>
 
   <!-- Sidebar -->
   <div id="mySidebar" class="sidebar">
-    <span class="closebtn" onclick="closeNav()">&times;</span>
-    <a href="#" onclick="showSection('home')"><i class="fas fa-home"></i> Home</a>
-    
-    <a href="#" onclick="showSection('assignments')"><i class="fas fa-tasks"></i> Assignments</a>
-    <a href="#" onclick="showSection('prayers')"><i class="fas fa-praying-hands"></i> Prayers</a>
-    <a href="#" onclick="showSection('quizzes')"><i class="fas fa-question-circle"></i> Quizzes</a>
-    <a href="#" onclick="showSection('notifications')"><i class="fas fa-bell"></i> Notifications</a>
-    
+    <span class="closebtn" onclick="document.getElementById('mySidebar').style.width='0'">&times;</span>
+    <a href="#home-section"><i class="fas fa-home"></i> Home</a>
+    <a href="#assignments-section"><i class="fas fa-tasks"></i> Assignments</a>
+    <a href="#prayers-section"><i class="fas fa-praying-hands"></i> Prayers</a>
+    <a href="#quizzes-section"><i class="fas fa-question-circle"></i> Quizzes</a>
+    <a href="#notifications-section"><i class="fas fa-bell"></i> Notifications</a>
     <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
   </div>
 
   <!-- Top Bar -->
   <div class="topbar">
-    <span class="menu-icon" onclick="openNav()"><i class="fas fa-bars"></i></span>
+    <span class="menu-icon" onclick="document.getElementById('mySidebar').style.width='250px'"><i class="fas fa-bars"></i></span>
     <div class="topbar-center">
        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Academy Logo" class="logo" />
       <h1>St. John's Catechism Academy</h1>
@@ -139,15 +90,104 @@
     <div>Welcome, {{ username }} ({{ role }})</div>
   </div>
 
-  <!-- Main Content Area -->
   <div id="main-content">
-    <section class="hero">
+
+    <!-- Home / Hero -->
+    <section id="home-section" class="hero">
       <h1>St. John's Catechism Academy</h1>
       <p>Grow Spiritually</p>
     </section>
 
-    <div class="container">
-      <h2 class="section-title"><i class="fas fa-bell"></i> Latest Notifications</h2>
+    <!-- Assignments -->
+    <div id="assignments-section" class="container">
+      <h2 class="section-title"><i class="fas fa-tasks"></i> Assignments - {{ section }}</h2>
+      <ul>
+        {% for a in assignments %}
+          <li>{{ a.text }}
+            {% if role in ['teacher', 'head'] %}
+              <form method="POST" action="{{ url_for('delete_assignment', id=a.id) }}" style="display:inline;">
+                <button class="btn btn-sm btn-danger">Delete</button>
+              </form>
+            {% endif %}
+          </li>
+        {% else %}
+          <p>No assignments yet.</p>
+        {% endfor %}
+      </ul>
+      {% if role in ['teacher', 'head'] %}
+        <form method="POST" action="{{ url_for('add_assignment') }}">
+          <textarea name="text" class="form-control mb-2" placeholder="New Assignment" required></textarea>
+          <select name="section" class="form-control mb-2" required>
+            {% for sec in sections %}
+              <option value="{{ sec }}">{{ sec }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn btn-success mt-2">Add Assignment</button>
+        </form>
+      {% endif %}
+    </div>
+
+    <!-- Prayers -->
+    <div id="prayers-section" class="container">
+      <h2 class="section-title"><i class="fas fa-praying-hands"></i> Prayers - {{ section }}</h2>
+      <ul>
+        {% for p in prayers %}
+          <li>{{ p.text }}
+            {% if role in ['teacher', 'head'] %}
+              <form method="POST" action="{{ url_for('delete_prayer', id=p.id) }}" style="display:inline;">
+                <button class="btn btn-sm btn-danger">Delete</button>
+              </form>
+            {% endif %}
+          </li>
+        {% else %}
+          <p>No prayers yet.</p>
+        {% endfor %}
+      </ul>
+      {% if role in ['teacher', 'head'] %}
+        <form method="POST" action="{{ url_for('add_prayer') }}">
+          <textarea name="text" class="form-control mb-2" placeholder="New Prayer" required></textarea>
+          <select name="section" class="form-control mb-2" required>
+            {% for sec in sections %}
+              <option value="{{ sec }}">{{ sec }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn btn-success mt-2">Add Prayer</button>
+        </form>
+      {% endif %}
+    </div>
+
+    <!-- Quizzes -->
+    <div id="quizzes-section" class="container">
+      <h2 class="section-title"><i class="fas fa-question-circle"></i> Quizzes - {{ section }}</h2>
+      <ul>
+        {% for q in quizzes %}
+          <li>{{ q.text }}
+            {% if role in ['teacher', 'head'] %}
+              <form method="POST" action="{{ url_for('delete_quiz', id=q.id) }}" style="display:inline;">
+                <button class="btn btn-sm btn-danger">Delete</button>
+              </form>
+            {% endif %}
+          </li>
+        {% else %}
+          <p>No quizzes yet.</p>
+        {% endfor %}
+      </ul>
+      {% if role in ['teacher', 'head'] %}
+        <form method="POST" action="{{ url_for('add_quiz') }}">
+          <textarea name="text" class="form-control mb-2" placeholder="New Quiz" required></textarea>
+          <select name="section" class="form-control mb-2" required>
+            {% for sec in sections %}
+              <option value="{{ sec }}">{{ sec }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn btn-success mt-2">Add Quiz</button>
+        </form>
+      {% endif %}
+    </div>
+
+    <!-- Notifications -->
+    <div id="notifications-section" class="container">
+      <h2 class="section-title"><i class="fas fa-bell"></i> Notifications</h2>
       <div class="row">
         {% for note in notifications %}
           <div class="col-md-4">
@@ -165,7 +205,6 @@
           <p>No notifications yet.</p>
         {% endfor %}
       </div>
-
       {% if role in ['teacher', 'head'] %}
         <form method="POST" action="{{ url_for('add_notification') }}">
           <input type="text" name="title" class="form-control mb-2" placeholder="Notification Title" required>
@@ -174,111 +213,8 @@
         </form>
       {% endif %}
     </div>
+
   </div>
-
-<script>
-  function openNav() {
-    document.getElementById("mySidebar").style.width = "250px";
-  }
-  function closeNav() {
-    document.getElementById("mySidebar").style.width = "0";
-  }
-
-  function showSection(section) {
-    let main = document.getElementById("main-content");
-    closeNav();
-
-    if (section === "assignments") {
-      main.innerHTML = `
-        <section class="hero"><h1>Assignments</h1><p>Your current tasks</p></section>
-        <div class="container">
-          <h2 class="section-title"><i class="fas fa-tasks"></i> Assignments</h2>
-          <ul>
-            {% for a in assignments %}
-              <li>{{ a.text }}
-                {% if role in ['teacher', 'head'] %}
-                  <form method="POST" action="{{ url_for('delete_assignment', id=a.id) }}" style="display:inline;">
-                    <button class="btn btn-sm btn-danger">Delete</button>
-                  </form>
-                {% endif %}
-              </li>
-            {% else %}
-              <p>No assignments yet.</p>
-            {% endfor %}
-          </ul>
-          {% if role in ['teacher', 'head'] %}
-            <form method="POST" action="{{ url_for('add_assignment') }}">
-              <textarea name="text" class="form-control mb-2" placeholder="New Assignment" required></textarea>
-              <select name="section" class="form-control mb-2" required>
-                {% for sec in sections %}
-                  <option value="{{ sec }}">{{ sec }}</option>
-                {% endfor %}
-              </select>
-              <button type="submit" class="btn btn-success mt-2">Add Assignment</button>
-            </form>
-          {% endif %}
-        </div>
-      `;
-    }
-    else if (section === "prayers") {
-      main.innerHTML = `
-        <section class="hero"><h1>Prayers</h1><p>Daily spiritual guidance</p></section>
-        <div class="container">
-          <h2 class="section-title"><i class="fas fa-praying-hands"></i> Prayers</h2>
-          <ul>
-            {% for p in prayers %}
-              <li>{{ p.text }}</li>
-            {% else %}
-              <p>No prayers yet.</p>
-            {% endfor %}
-          </ul>
-          {% if role in ['teacher', 'head'] %}
-            <form method="POST" action="{{ url_for('add_prayer') }}">
-              <textarea name="text" class="form-control mb-2" placeholder="New Prayer" required></textarea>
-              <select name="section" class="form-control mb-2" required>
-                {% for sec in sections %}
-                  <option value="{{ sec }}">{{ sec }}</option>
-                {% endfor %}
-              </select>
-              <button type="submit" class="btn btn-success mt-2">Add Prayer</button>
-            </form>
-          {% endif %}
-        </div>
-      `;
-    }
-    else if (section === "quizzes") {
-      main.innerHTML = `
-        <section class="hero"><h1>Quizzes</h1><p>Test your knowledge</p></section>
-        <div class="container">
-          <h2 class="section-title"><i class="fas fa-question-circle"></i> Quizzes</h2>
-          <ul>
-            {% for q in quizzes %}
-              <li>{{ q.text }}</li>
-            {% else %}
-              <p>No quizzes yet.</p>
-            {% endfor %}
-          </ul>
-          {% if role in ['teacher', 'head'] %}
-            <form method="POST" action="{{ url_for('add_quiz') }}">
-              <textarea name="text" class="form-control mb-2" placeholder="New Quiz" required></textarea>
-              <select name="section" class="form-control mb-2" required>
-                {% for sec in sections %}
-                  <option value="{{ sec }}">{{ sec }}</option>
-                {% endfor %}
-              </select>
-              <button type="submit" class="btn btn-success mt-2">Add Quiz</button>
-            </form>
-          {% endif %}
-        </div>
-      `;
-    }
-    else if (section === "notifications") {
-      location.reload(); // reload page so notifications render properly
-    }
-    else if (section === "home") {
-      location.reload();
-    }
-  }
-</script>
 </body>
 </html>
+
