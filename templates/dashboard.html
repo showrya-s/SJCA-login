@@ -177,6 +177,12 @@
   </div>
 
 <script>
+  const SECTIONS = [
+    "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6",
+    "Grade 7", "Grade 8", "Grade 9", "Grade 10",
+    "Holy Communion", "Holy Confirmation", "Holy Communion and Confirmation"
+  ];
+
   function openNav() {
     document.getElementById("mySidebar").style.width = "250px";
   }
@@ -208,7 +214,10 @@
           </ul>
           {% if role in ['teacher', 'head'] %}
             <form method="POST" action="{{ url_for('add_assignment') }}">
-              <textarea name="text" class="form-control" placeholder="New Assignment" required></textarea>
+              <textarea name="text" class="form-control mb-2" placeholder="New Assignment" required></textarea>
+              <select name="section" class="form-control mb-2" required>
+                ${SECTIONS.map(sec => `<option value="${sec}">${sec}</option>`).join('')}
+              </select>
               <button type="submit" class="btn btn-success mt-2">Add Assignment</button>
             </form>
           {% endif %}
@@ -220,7 +229,22 @@
         <section class="hero"><h1>Prayers</h1><p>Daily spiritual guidance</p></section>
         <div class="container">
           <h2 class="section-title"><i class="fas fa-praying-hands"></i> Common Prayers</h2>
-          <p>Our Father, who art in heaven...</p>
+          <ul>
+            {% for p in prayers %}
+              <li>{{ p.text }}</li>
+            {% else %}
+              <p>No prayers yet.</p>
+            {% endfor %}
+          </ul>
+          {% if role in ['teacher', 'head'] %}
+            <form method="POST" action="{{ url_for('add_prayer') }}">
+              <textarea name="text" class="form-control mb-2" placeholder="New Prayer" required></textarea>
+              <select name="section" class="form-control mb-2" required>
+                ${SECTIONS.map(sec => `<option value="${sec}">${sec}</option>`).join('')}
+              </select>
+              <button type="submit" class="btn btn-success mt-2">Add Prayer</button>
+            </form>
+          {% endif %}
         </div>
       `;
     } 
@@ -229,12 +253,27 @@
         <section class="hero"><h1>Quizzes</h1><p>Test your knowledge</p></section>
         <div class="container">
           <h2 class="section-title"><i class="fas fa-question-circle"></i> Upcoming Quiz</h2>
-          <p>Quiz on the Beatitudes this Sunday.</p>
+          <ul>
+            {% for q in quizzes %}
+              <li>{{ q.text }}</li>
+            {% else %}
+              <p>No quizzes yet.</p>
+            {% endfor %}
+          </ul>
+          {% if role in ['teacher', 'head'] %}
+            <form method="POST" action="{{ url_for('add_quiz') }}">
+              <textarea name="text" class="form-control mb-2" placeholder="New Quiz" required></textarea>
+              <select name="section" class="form-control mb-2" required>
+                ${SECTIONS.map(sec => `<option value="${sec}">${sec}</option>`).join('')}
+              </select>
+              <button type="submit" class="btn btn-success mt-2">Add Quiz</button>
+            </form>
+          {% endif %}
         </div>
       `;
     }
     else if (section === "notifications") {
-      location.reload(); // reload page so notifications render properly
+      location.reload();
     }
     else if (section === "home") {
       location.reload();
