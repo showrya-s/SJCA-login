@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Register - St. John's Catechism Academy</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #fdfcf9;
+      font-family: 'Times New Roman', serif;
+    }
+    .register-container {
+      max-width: 400px;
+      margin: 80px auto;
+      padding: 30px;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.15);
+      border: 1px solid gold;
+    }
+    .btn-custom {
+      background-color: #5a0000;
+      color: white;
+    }
+    .btn-custom:hover {
+      background-color: gold;
+      color: #5a0000;
+    }
+    h2 {
+      color: #5a0000;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .logo {
+      display: block;
+      margin: 0 auto 20px auto;
+      height: 60px;
+    }
+  </style>
+</head>
+<body>
+  <div class="register-container">
+    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Academy Logo" class="logo" />
+    <h2 class="text-center">Register</h2>
+
+    {% if error %}
+      <div class="alert alert-danger" role="alert">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+      <div class="alert alert-success" role="alert">{{ success }}</div>
+    {% endif %}
+
+    <form method="post">
+      <div class="mb-3">
+        <input type="text" class="form-control" name="username" placeholder="Choose Username" required>
+      </div>
+      <div class="mb-3">
+        <input type="password" class="form-control" name="password" placeholder="Choose Password" required>
+      </div>
+      <div class="mb-3">
+        <select class="form-control" name="role" required>
+          <option value="" disabled selected>Select Role</option>
+          <option value="student">Student</option>
+          <option value="teacher">Teacher</option>
+          <option value="head">Headmaster</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-custom w-100">Register</button>
+    </form>
+
+    <p class="text-center mt-3">Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+  </div>
+</body>
+</html>
