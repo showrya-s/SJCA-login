@@ -216,7 +216,7 @@
             <form method="POST" action="{{ url_for('add_assignment') }}">
               <textarea name="text" class="form-control mb-2" placeholder="New Assignment" required></textarea>
               <select name="section" class="form-control mb-2" required>
-                ${SECTIONS.map(sec => `<option value="${sec}">${sec}</option>`).join('')}
+                ${SECTIONS.map(sec => `<option value="${sec}" ${sec.toLowerCase()=== '{{ section }}'.toLowerCase() ? 'selected' : ''}>${sec}</option>`).join('')}
               </select>
               <button type="submit" class="btn btn-success mt-2">Add Assignment</button>
             </form>
@@ -240,7 +240,7 @@
             <form method="POST" action="{{ url_for('add_prayer') }}">
               <textarea name="text" class="form-control mb-2" placeholder="New Prayer" required></textarea>
               <select name="section" class="form-control mb-2" required>
-                ${SECTIONS.map(sec => `<option value="${sec}">${sec}</option>`).join('')}
+                ${SECTIONS.map(sec => `<option value="${sec}" ${sec.toLowerCase()=== '{{ section }}'.toLowerCase() ? 'selected' : ''}>${sec}</option>`).join('')}
               </select>
               <button type="submit" class="btn btn-success mt-2">Add Prayer</button>
             </form>
@@ -264,7 +264,7 @@
             <form method="POST" action="{{ url_for('add_quiz') }}">
               <textarea name="text" class="form-control mb-2" placeholder="New Quiz" required></textarea>
               <select name="section" class="form-control mb-2" required>
-                ${SECTIONS.map(sec => `<option value="${sec}">${sec}</option>`).join('')}
+                ${SECTIONS.map(sec => `<option value="${sec}" ${sec.toLowerCase()=== '{{ section }}'.toLowerCase() ? 'selected' : ''}>${sec}</option>`).join('')}
               </select>
               <button type="submit" class="btn btn-success mt-2">Add Quiz</button>
             </form>
@@ -273,7 +273,7 @@
       `;
     }
     else if (section === "notifications") {
-      location.reload();
+      location.reload(); // reload page so notifications render properly
     }
     else if (section === "home") {
       location.reload();
