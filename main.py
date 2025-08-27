@@ -36,6 +36,25 @@ def login():
     return render_template("login.html", error=error)
 
 
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    error = None
+    success = None
+
+    if request.method == "POST":
+        username = request.form["username"].lower()
+        password = request.form["password"]
+        role = request.form["role"]
+
+        if username in users:
+            error = "Username already exists."
+        else:
+            users[username] = [generate_password_hash(password), role]
+            success = "Account created successfully! You can now login."
+    
+    return render_template("register.html", error=error, success=success)
+
+
 @app.route("/dashboard")
 def dashboard():
     if "username" not in session:
@@ -54,30 +73,4 @@ def dashboard():
 def logout():
     session.clear()
     return redirect(url_for("login"))
-
-
-# ---- Role-based example areas ----
-@app.route("/student-area")
-def student_area():
-    if "role" in session and session["role"] == "student":
-        return f"Welcome {session['username']} to the Student Area."
-    return redirect(url_for("dashboard"))
-
-
-@app.route("/teacher-area")
-def teacher_area():
-    if "role" in session and session["role"] in ["teacher", "head"]:
-        return f"Welcome {session['username']} to the Teacher Area."
-    return redirect(url_for("dashboard"))
-
-
-@app.route("/head-area")
-def head_area():
-    if "role" in session and session["role"] == "head":
-        return f"Welcome {session['username']} (Headmaster) to the Head Area."
-    return redirect(url_for("dashboard"))
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
 
